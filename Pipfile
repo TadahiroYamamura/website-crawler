@@ -7,8 +7,6 @@ verify_ssl = true
 
 [packages]
 selenium = "*"
-chromedriver-binary = "==80.*"
 injector = "*"
-
-[requires]
-python_version = "3.8"
+chromedriver-binary = "==85.*"
+beautifulsoup4 = "*"

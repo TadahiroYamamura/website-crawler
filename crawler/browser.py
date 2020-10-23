@@ -1,6 +1,6 @@
 import logging
 import re
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin, quote
 from urllib.request import urlopen
 from urllib.error import HTTPError
 
@@ -13,7 +13,7 @@ class ChromeBrowser:
         url = self._normalize_url(page_url, from_page)
 
         try:
-            with urlopen(url) as res:
+            with urlopen(self._quote_url(url)) as res:
                 self._header = { h[0]: h[1] for h in res.getheaders() }
                 self._code = res.getcode()
                 self._url = res.geturl()
@@ -30,6 +30,9 @@ class ChromeBrowser:
         self._url = ''
         self._soup = None
         self._error = None
+
+    def _quote_url(self, url):
+        return ''.join(map(lambda x: x if ord(x) < 256 else quote(x), url))
 
     def _normalize_url(self, page_url, from_page):
         if from_page is None: return page_url

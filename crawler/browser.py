@@ -39,18 +39,9 @@ class ChromeBrowser:
         return ''.join(map(lambda x: x if ord(x) < 256 else quote(x), url))
 
     def _normalize_url(self, page_url, from_page):
-        if from_page is None: return page_url
-        if urlparse(page_url).netloc != '': return page_url
-
-        urlinfo = urlparse(from_page.url)
-        path = urlinfo.path
-        if '/' not in path:
-            base_url = from_page.url.rstrip('/') + '/'
-        if len(urlinfo.path.split('/')[-1].split('.')) > 1:
-            base_url = from_page.url
-        else:
-            base_url = from_page.url.rstrip('/') + '/'
-        return urljoin(base_url, page_url)
+        # Noneの時はnormalizeできないのでそのまま返す。
+        # CLIからの入力の時のみ、この条件が満たされる想定。
+        return page_url if from_page is None else urljoin(from_page.url, page_url)
 
     def get_header(self, key):
         try:

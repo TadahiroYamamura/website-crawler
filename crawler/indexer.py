@@ -18,19 +18,15 @@ class ContentIndexer:
             return
         logging.info('crawling...: ' + page.url)
         self._repository.store_content(page.canonical_url, page.content_type, page.content)
-        linked_pages = []
         for url in page.internal_link_urls:
             code = self._repository.get_statuscode_from_cache(url)
             if code is None:
                 linked_page = Browser(url, page)
                 self._repository.store_cache(url, linked_page.code)
                 self._repository.store_link(page.canonical_url, linked_page.url, linked_page.code)
-                linked_pages.append(linked_page)
+                self._store(linked_page)
             else:
                 self._repository.store_link(page.canonical_url, url, code)
-
-        for linked_page in linked_pages:
-            self._store(linked_page)
 
     def close(self):
         self._repository.close()

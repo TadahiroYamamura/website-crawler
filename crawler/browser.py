@@ -119,5 +119,5 @@ class ChromeBrowser:
 
     @property
     def internal_link_urls(self):
-        return [self._normalize_url(e.get(self._attr_name(e, 'href')).strip(), self)
-                for e in self.internal_links]
+        return list(set([self._normalize_url(e.get(self._attr_name(e, 'href')).strip(), self)
+            for e in self.internal_links]))

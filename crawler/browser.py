@@ -76,7 +76,7 @@ class ChromeBrowser:
         url = anchor.get(name)
         if url is None: return False
         if url.strip() == '': return False
-        return self.domain in self._normalize_url(url, self)
+        return self.domain in urlparse(self._normalize_url(url, self)).netloc
 
     @property
     def code(self):

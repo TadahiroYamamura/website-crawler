@@ -111,7 +111,8 @@ class ChromeBrowser:
 
     @property
     def links(self):
-        return [] if self._soup is None else [e for e in self._soup.find_all('a')]
+        if self._soup is None: return []
+        return [e for e in self._soup.find_all('a') if self._attr_name(e, 'href') is not None]
 
     @property
     def internal_links(self):
@@ -119,5 +120,15 @@ class ChromeBrowser:
 
     @property
     def internal_link_urls(self):
-        return list(set([self._normalize_url(e.get(self._attr_name(e, 'href')).strip(), self)
-            for e in self.internal_links]))
+        hrefs = [e.get(self._attr_name(e, 'href')).strip() for e in self.internal_links]
+
+        # 別ページへのリンクである場合のみに絞り込む
+        # 例えば"javascript:"や"tel:"で始まるならば、それは除外する
+        exp = re.compile(r'^[a-zA-Z]+:[^/]')
+        hrefs = [href for href in hrefs if exp.search(href) is None]
+
+        # 正規化を実行
+        hrefs = [self._normalize_url(href, self) for href in hrefs]
+
+        # 重複は除く
+        return list(set(hrefs))

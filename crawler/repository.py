@@ -13,7 +13,7 @@ class SQLiteRepository:
         c = self._connection.cursor()
         try:
             c.execute('create table cache (url text primary key, status)')
-            c.execute('create table content (url text primary key, content text not null, digest text not null)')
+            c.execute('create table content (url text primary key, content_type text not null, content text not null, digest text not null)')
             c.execute('create table link (source text not null, dest text not null, status integer not null)')
         finally:
             c.close()
@@ -44,11 +44,11 @@ class SQLiteRepository:
         finally:
             c.close()
 
-    def store_content(self, url, content):
+    def store_content(self, url, content_type, content):
         c = self._connection.cursor()
         try:
             digest = hashlib.sha256(content.encode('utf-8')).hexdigest()
-            c.execute('insert into content(url, content, digest) values (?, ?, ?)', (url, content, digest))
+            c.execute('insert into content(url, content_type, content, digest) values (?, ?, ?, ?)', (url, content_type, content, digest))
             self._connection.commit()
         except Exception as e:
             logging.error('error page: {} message: {}'.format(url, e.message))

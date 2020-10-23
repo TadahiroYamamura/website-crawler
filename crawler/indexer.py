@@ -17,7 +17,7 @@ class ContentIndexer:
         if self._repository.check_if_url_registered(page.canonical_url):
             return
         logging.info('crawling...: ' + page.url)
-        self._repository.store_content(page.canonical_url, page.content)
+        self._repository.store_content(page.canonical_url, page.content_type, page.content)
         linked_pages = []
         for url in page.internal_link_urls:
             code = self._repository.get_statuscode_from_cache(url)

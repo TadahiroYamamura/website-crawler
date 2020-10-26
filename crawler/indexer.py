@@ -1,4 +1,5 @@
 import logging
+from collections import deque
 
 from crawler.browser import ChromeBrowser as Browser
 
@@ -6,10 +7,13 @@ from crawler.browser import ChromeBrowser as Browser
 class ContentIndexer:
     def __init__(self, repository):
         self._repository = repository
+        self._queue = deque()
 
     def start(self, url):
         logging.info('crawl started at: ' + url)
-        self._store(Browser(url))
+        self._queue.append(Browser(url))
+        while len(self._queue) > 0:
+            self._store(self._queue.popleft())
 
     def _store(self, page):
         if not page.available:
@@ -24,7 +28,7 @@ class ContentIndexer:
                 linked_page = Browser(url, page)
                 self._repository.store_cache(url, linked_page.code)
                 self._repository.store_link(page.canonical_url, linked_page.url, linked_page.code)
-                self._store(linked_page)
+                self._queue.append(linked_page)
             else:
                 self._repository.store_link(page.canonical_url, url, code)
 

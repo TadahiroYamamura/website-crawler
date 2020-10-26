@@ -31,7 +31,7 @@ if __name__ == '__main__':
     try:
         indexer.start(url)
     except Error as err:
-        print(err)
+        logging.error(err)
         indexer.dump(errordump_file)
     finally:
         indexer.close()

@@ -22,7 +22,7 @@ class ContentIndexer:
                 page = Browser(*x)
             except Error as err:
                 self._queue.appendleft(x)
-                print('error occured during opening url')
+                logging.error('error occured during opening url')
                 raise err
             else:
                 if self._repository.check_if_url_registered(page.canonical_url):

@@ -13,6 +13,7 @@ class ChromeBrowser:
         url = self._normalize_url(page_url, from_page)
 
         try:
+            logging.info('opening url: ' + url)
             with urlopen(Request(self._quote_url(url), headers=headers)) as res:
                 self._header = { h[0]: h[1] for h in res.getheaders() }
                 self._code = res.getcode()

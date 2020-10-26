@@ -1,6 +1,6 @@
 import logging
 import re
-from urllib.parse import urlparse, urljoin, quote
+from urllib.parse import urlparse, urljoin, urldefrag, quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError
 
@@ -42,9 +42,8 @@ class ChromeBrowser:
         return ''.join(map(lambda x: x if ord(x) < 256 else quote(x), url))
 
     def _normalize_url(self, page_url, from_page):
-        # Noneの時はnormalizeできないのでそのまま返す。
-        # CLIからの入力の時のみ、この条件が満たされる想定。
-        return page_url if from_page is None else urljoin(from_page.url, page_url)
+        url = page_url if from_page is None else urljoin(from_page.url, page_url)
+        return urldefrag(url).url
 
     def get_header(self, key):
         try:

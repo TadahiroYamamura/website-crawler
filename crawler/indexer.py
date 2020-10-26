@@ -11,11 +11,12 @@ class ContentIndexer:
         self._repository = repository
         self._queue = deque()
         self.headers = {}
+        self.timeout = 30
 
     def start(self, url):
         if url is not None:
             logging.info('crawl started at: ' + url)
-            self._queue.append((url, None, self.headers))
+            self._queue.append((url, None, self.headers, self.timeout))
         while len(self._queue) > 0:
             x = self._queue.popleft()
             try:
@@ -31,7 +32,7 @@ class ContentIndexer:
                 self._store_content(page)
                 self._store_links(page)
                 for url in page.internal_link_urls:
-                    self._queue.append((url, page, self.headers))
+                    self._queue.append((url, page, self.headers, self.timeout))
                 logging.info('page processed.')
 
     def _store_content(self, page):
@@ -65,4 +66,5 @@ class ContentIndexer:
         with open(filepath, 'r', encoding='utf-8', newline='') as f:
             r = csv.reader(f)
             for line in r:
-                self._queue.append((line[0], None if line[1] == '' else Browser(line[1], None, self.headers), self.headers))
+                from_page = None if line[1] == '' else Browser(line[1], None, self.headers, self.timeout)
+                self._queue.append((line[0], from_page, self.headers, self.timeout))

@@ -20,7 +20,7 @@ class ContentIndexer:
             x = self._queue.popleft()
             try:
                 page = Browser(*x)
-            except Error as err:
+            except Exception as err:
                 self._queue.appendleft(x)
                 logging.error('error occured during opening url')
                 raise err

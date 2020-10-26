@@ -19,9 +19,19 @@ if __name__ == '__main__':
 
     if not os.path.isdir(repository_path):
         os.makedirs(repository_path)
+
+    # indexer初期化
     repository = SQLiteRepository(os.path.join(repository_path, 'crawldata.db'))
     indexer = ContentIndexer(repository)
+
+    # もしエラーが起こった場合はここに吐き出される想定
+    errordump_file = os.path.join(repository_path, 'errordump.csv')
+    if os.path.isfile(errordump_file):
+        indexer.restore(errordump_file)
     try:
         indexer.start(url)
+    except Error as err:
+        print(err)
+        indexer.dump(errordump_file)
     finally:
         indexer.close()

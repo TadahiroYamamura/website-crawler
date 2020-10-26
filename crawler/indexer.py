@@ -1,6 +1,5 @@
 import csv
 import logging
-from collections import deque
 from urllib.error import URLError
 
 from crawler.browser import ChromeBrowser as Browser
@@ -9,20 +8,20 @@ from crawler.browser import ChromeBrowser as Browser
 class ContentIndexer:
     def __init__(self, repository):
         self._repository = repository
-        self._queue = deque()
+        self._queue = set()
         self.headers = {}
         self.timeout = 30
 
     def start(self, url):
         if url is not None:
             logging.info('crawl started at: ' + url)
-            self._queue.append((url, None, self.headers, self.timeout))
+            self._queue.add(Browser.normalize_url(url, None))
         while len(self._queue) > 0:
-            x = self._queue.popleft()
+            x = self._queue.pop()
             try:
-                page = Browser(*x)
+                page = Browser(x, None, self.headers, self.timeout)
             except Exception as err:
-                self._queue.appendleft(x)
+                self._queue.add(x)
                 logging.error('error occured during opening url')
                 raise err
             else:
@@ -32,7 +31,7 @@ class ContentIndexer:
                 self._store_content(page)
                 self._store_links(page)
                 for url in page.internal_link_urls:
-                    self._queue.append((url, page, self.headers, self.timeout))
+                    self._queue.add(Browser.normalize_url(url, page))
                 logging.info('page processed.')
 
     def _store_content(self, page):
@@ -54,17 +53,14 @@ class ContentIndexer:
         with open(filepath, 'w', encoding='utf-8', newline='') as f:
             w = csv.writer(f)
             for data in self._queue:
-                if isinstance(data, Browser):
-                    w.writerow([data.url, ''])
-                else:
-                    w.writerow([data[0], '' if data[1] is None else data[1].url])
+                w.writerow([data])
 
     def restore(self, filepath):
         """
         上記で吐き出したデータを元にqueue内の値を再構築する
         """
+        logging.info('restoreing...')
         with open(filepath, 'r', encoding='utf-8', newline='') as f:
             r = csv.reader(f)
             for line in r:
-                from_page = None if line[1] == '' else Browser(line[1], None, self.headers, self.timeout)
-                self._queue.append((line[0], from_page, self.headers, self.timeout))
+                self._queue.add(line)

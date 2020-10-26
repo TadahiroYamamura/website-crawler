@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 class ChromeBrowser:
     def __init__(self, page_url, from_page=None, headers={}, timeout=30):
         self._init_vars()
-        url = self._normalize_url(page_url, from_page)
+        url = ChromeBrowser.normalize_url(page_url, from_page)
 
         try:
             logging.info('opening url: ' + url)
@@ -21,14 +21,14 @@ class ChromeBrowser:
                 self._content_type = res.headers.get_content_type()
                 if self.content_type == 'text/html':
                     self._soup = BeautifulSoup(res.read(), 'html.parser')
+            logging.info('parse end successfully')
         except HTTPError as e:
             self._header = {  h[0]: h[1] for h in e.getheaders() }
             self._code = e.getcode()
             self._url = e.geturl()
             self._content_type = 'error/' + str(self.code)
             self._response_error = e
-        finally:
-            logging.info('parse end')
+            logging.info('parse end with expected error')
 
     def _init_vars(self):
         self._header = {}
@@ -41,7 +41,8 @@ class ChromeBrowser:
     def _quote_url(self, url):
         return ''.join(map(lambda x: x if ord(x) < 256 else quote(x), url))
 
-    def _normalize_url(self, page_url, from_page):
+    @classmethod
+    def normalize_url(cls, page_url, from_page):
         url = page_url if from_page is None else urljoin(from_page.url, page_url)
         return urldefrag(url).url
 
@@ -73,7 +74,7 @@ class ChromeBrowser:
         url = anchor.get(name)
         if url is None: return False
         if url.strip() == '': return False
-        return self.domain in urlparse(self._normalize_url(url, self)).netloc
+        return self.domain in urlparse(ChromeBrowser.normalize_url(url, self)).netloc
 
     @property
     def content_type(self):
@@ -130,7 +131,7 @@ class ChromeBrowser:
         hrefs = [href for href in hrefs if exp.search(href) is None]
 
         # 正規化を実行
-        hrefs = [self._normalize_url(href, self) for href in hrefs]
+        hrefs = [ChromeBrowser.normalize_url(href, self) for href in hrefs]
 
         # 重複は除く
         return list(set(hrefs))

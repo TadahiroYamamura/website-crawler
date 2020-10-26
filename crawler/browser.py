@@ -27,6 +27,8 @@ class ChromeBrowser:
             self._url = e.geturl()
             self._content_type = 'error/' + str(self.code)
             self._response_error = e
+        finally:
+            logging.info('parse end')
 
     def _init_vars(self):
         self._header = {}

@@ -26,17 +26,20 @@ class ContentIndexer:
                 raise err
             else:
                 if self._repository.check_if_url_registered(page.canonical_url):
+                    logging.info('the page already processed.')
                     continue
                 self._store_content(page)
                 self._store_links(page)
                 for url in page.internal_link_urls:
                     self._queue.append((url, page, self.headers))
+                logging.info('page processed.')
 
     def _store_content(self, page):
-        logging.info('crawling...: ' + page.url)
+        logging.info('crawling...')
         self._repository.store_content(page.canonical_url, page.code, page.content_type, page.content)
 
     def _store_links(self, page):
+        logging.info('list links...')
         url_from = page.url
         self._repository.store_link(url_from, page.internal_link_urls)
 

@@ -2,7 +2,7 @@ import logging
 import re
 from urllib.parse import urlparse, urlunparse, urljoin, urldefrag, quote
 from urllib.request import urlopen, Request
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
 from bs4 import BeautifulSoup
 
@@ -29,6 +29,10 @@ class ChromeBrowser:
             self._content_type = 'error/' + str(self.code)
             self._response_error = e
             logging.info('parse end with expected error')
+        except URLError as e:
+            self._url = self._quote_url(url)
+            self._content_type = 'error/-1'
+            self._response_error = e
 
     def _init_vars(self):
         self._header = {}

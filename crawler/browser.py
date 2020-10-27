@@ -1,6 +1,6 @@
 import logging
 import re
-from urllib.parse import urlparse, urljoin, urldefrag, quote
+from urllib.parse import urlparse, urlunparse, urljoin, urldefrag, quote
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError
 
@@ -39,7 +39,14 @@ class ChromeBrowser:
         self._error = None
 
     def _quote_url(self, url):
-        return ''.join(map(lambda x: x if ord(x) < 256 else quote(x), url))
+        tmp = urlparse(url)
+        return urlunparse((
+            tmp.scheme,
+            tmp.netloc.encode('idna').decode('utf-8'),
+            quote(tmp.path),
+            tmp.params,
+            quote(tmp.query, safe='&='),
+            ''))
 
     @classmethod
     def normalize_url(cls, page_url, from_page):

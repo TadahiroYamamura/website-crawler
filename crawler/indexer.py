@@ -63,4 +63,4 @@ class ContentIndexer:
         with open(filepath, 'r', encoding='utf-8', newline='') as f:
             r = csv.reader(f)
             for line in r:
-                self._queue.add(line)
+                self._queue.add(line[0])
